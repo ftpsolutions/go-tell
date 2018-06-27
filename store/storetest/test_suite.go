@@ -3,7 +3,7 @@ package storetest
 import (
 	"testing"
 
-	"github.com/kithix/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store"
 )
 
 func errCheck(err error, t *testing.T) {

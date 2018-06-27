@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/boltdb/bolt"
-	"github.com/kithix/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store"
 	uuid "github.com/satori/go.uuid"
 )
 

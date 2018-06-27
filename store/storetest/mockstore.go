@@ -1,7 +1,7 @@
 package storetest
 
 import (
-	"github.com/kithix/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store"
 )
 
 type MockStorage struct {

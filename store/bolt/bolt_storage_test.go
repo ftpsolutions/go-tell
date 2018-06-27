@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/Flaque/filet"
-	"github.com/kithix/go-tell/store"
-	"github.com/kithix/go-tell/store/storetest"
+	"github.com/ftpsolutions/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store/storetest"
 )
 
 // Utility to create a temporary boltstore with a cleanup function

@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/kithix/go-tell/sender"
-	"github.com/kithix/go-tell/sender/chat"
-	"github.com/kithix/go-tell/store"
-	"github.com/kithix/go-tell/store/mem"
-	"github.com/kithix/go-tell/worker"
+	"github.com/ftpsolutions/go-tell/sender"
+	"github.com/ftpsolutions/go-tell/sender/chat"
+	"github.com/ftpsolutions/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store/mem"
+	"github.com/ftpsolutions/go-tell/worker"
 )
 
 func main() {

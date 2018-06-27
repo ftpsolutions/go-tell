@@ -1,9 +1,9 @@
 package email
 
 import (
-	"github.com/kithix/go-tell/sender"
-	"github.com/kithix/go-tell/store"
-	"github.com/kithix/go-tell/worker"
+	"github.com/ftpsolutions/go-tell/sender"
+	"github.com/ftpsolutions/go-tell/store"
+	"github.com/ftpsolutions/go-tell/worker"
 )
 
 func validateEmail(job *store.Job) error {

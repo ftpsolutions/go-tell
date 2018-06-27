@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"github.com/kithix/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store"
 )
 
 type JobHandler func(job Job) error

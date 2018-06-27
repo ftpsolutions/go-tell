@@ -3,8 +3,8 @@ package memstorage
 import (
 	"testing"
 
-	"github.com/kithix/go-tell/store"
-	"github.com/kithix/go-tell/store/storetest"
+	"github.com/ftpsolutions/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store/storetest"
 )
 
 func TestStoreSuite(t *testing.T) {

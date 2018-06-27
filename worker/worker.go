@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/kithix/go-tell/store"
+	"github.com/ftpsolutions/go-tell/store"
 )
 
 var nullLogger = log.New(ioutil.Discard, "", 0)
