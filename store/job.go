@@ -27,6 +27,12 @@ type Job struct {
 	Type   string // "email", "sms", "chat" , ?
 	Status string
 	Data   JobData
+	// Failure Information
+	RetryCount int
+}
+
+func (job *Job) String() string {
+	return job.ID.String()
 }
 
 type JobData struct {
@@ -79,6 +85,7 @@ func BuildEmailJob(from, subject, body, tag string, tracking, isHTML bool, attac
 	if err != nil {
 		return &Job{}, err
 	}
+
 	return &Job{
 		ID:     generateJobID(),
 		Type:   JobTypeEmail,

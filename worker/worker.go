@@ -1,21 +1,23 @@
 package worker
 
 import (
-	"io/ioutil"
+	"errors"
 	"log"
+	"os"
 
 	"github.com/ftpsolutions/go-tell/store"
 )
 
-var nullLogger = log.New(ioutil.Discard, "", 0)
+var stdoutLogger = log.New(os.Stdout, "", 1)
 
 type Job = store.Job
 type Store = store.Store
 
 type Worker struct {
-	jobHandler JobHandler
-	store      Store
-	stopChan   chan struct{}
+	jobHandler    JobHandler
+	store         Store
+	stopChan      chan struct{}
+	retryStrategy RetryStrategy
 
 	Logger *log.Logger
 }
@@ -39,10 +41,19 @@ func (w *Worker) handleJob(job *Job) {
 
 	if err != nil {
 		w.Logger.Println("Error handling job", job, err)
-		// TODO insert retry strategy here
+		err = w.retryStrategy(w.store, job)
+		if err != nil {
+			w.Logger.Println("Error retrying job", job, err)
+		}
 		return
 	}
 	w.Logger.Println("Job completed", job)
+
+	err = w.store.CompleteJob(job)
+	if err != nil {
+		w.Logger.Println("Error completing job", job, err)
+		// TODO work out what to do when the job fails to complete.
+	}
 }
 
 func run(w *Worker) {
@@ -65,19 +76,53 @@ func run(w *Worker) {
 	}
 }
 
-// Takes a store, jobHandler, logger
-func Open(store Store, jobHandler JobHandler, logger *log.Logger) (*Worker, error) {
+func Open(
+	store Store,
+	jobHandler JobHandler,
+	retryStrategy RetryStrategy,
+	logger *log.Logger,
+) (*Worker, error) {
+	// Default to stdout logging
 	if logger == nil {
-		logger = nullLogger
+		logger = stdoutLogger
 	}
-	stopChan := make(chan struct{})
+	// Default to one retry attempt
+	if retryStrategy == nil {
+		retryStrategy = OneAttempt
+	}
 	w := Worker{
-		jobHandler: jobHandler,
-		store:      store,
-		stopChan:   stopChan,
+		jobHandler:    jobHandler,
+		store:         store,
+		retryStrategy: retryStrategy,
+		stopChan:      make(chan struct{}),
 
 		Logger: logger,
 	}
 	go run(&w)
 	return &w, nil
+}
+
+type RetryStrategy func(Store, *Job) error
+
+// Retry Strategies
+func OneAttempt(store Store, job *Job) error {
+	return store.FailedJob(job)
+}
+
+func AlwaysRetry(store Store, job *Job) error {
+	return store.ReturnJob(job)
+}
+
+func RetryUntil(failureLimit int) RetryStrategy {
+	return func(store Store, job *Job) error {
+		job.RetryCount++
+		if job.RetryCount >= failureLimit {
+			err := store.FailedJob(job)
+			if err != nil {
+				return err
+			}
+			return errors.New("Retry limit reached")
+		}
+		return store.ReturnJob(job)
+	}
 }
