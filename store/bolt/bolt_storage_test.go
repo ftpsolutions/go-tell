@@ -34,6 +34,29 @@ func createTestBoltStore(t *testing.T) (*BoltStore, func()) {
 	return boltStore, cleanUpFunc
 }
 
+func TestResetPendingJobs(t *testing.T) {
+	boltStore, cleanupFunc := createTestBoltStore(t)
+	defer cleanupFunc()
+	boltStore.AddJob(&store.Job{
+		ID: storetest.BuildJobID(42),
+	})
+	_, err := boltStore.GetJob()
+	if err != nil {
+		t.Error(err)
+	}
+	err = boltStore.resetPendingJobs()
+	if err != nil {
+		t.Error(err)
+	}
+	job, err := boltStore.GetJob()
+	if err != nil {
+		t.Error(err)
+	}
+	if job.ID != storetest.BuildJobID(42) {
+		t.Error("Job ID was not the same, real problems here")
+	}
+}
+
 func TestStoreSuite(t *testing.T) {
 	storetest.StorageSuite(func() (store.Storage, func()) {
 		s, cleanUpFunc := createTestBoltStore(t)

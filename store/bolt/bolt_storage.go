@@ -27,7 +27,42 @@ func Open(filePath string, bucketName string, opts *bolt.Options, logger *log.Lo
 		db:         database,
 	}
 
+	err = boltStore.resetPendingJobs()
+	if err != nil {
+		return nil, err
+	}
+
 	return boltStore, nil
+}
+
+func (s *BoltStore) resetPendingJobs() error {
+	return s.write(func(bucket *bolt.Bucket) error {
+		c := bucket.Cursor()
+		var err error
+		// For each job in the store, reset all pending jobs to created.
+		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
+			job := &store.Job{}
+			err = json.Unmarshal(data, job)
+			if err != nil {
+				return err
+			}
+
+			if job.Status != store.StatusJobPending {
+				continue
+			}
+
+			job.Status = store.StatusJobCreated
+			_, updatedJobData, err := getByteDataFromJob(job)
+			if err != nil {
+				return err
+			}
+			err = bucket.Put(idBytes, updatedJobData)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (s *BoltStore) Close() error {
