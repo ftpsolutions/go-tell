@@ -14,11 +14,14 @@ import (
 )
 
 func main() {
+	var err error
+
+	logger := log.New(os.Stdout, "", 1)
+	// A storage system provides CRUD operations for behaviours
+	s := memstorage.Open()
+
 	// store.Basic is the default behaviours for a storage system.
-	jobStorage := store.Basic(
-		// A storage system provides CRUD operations for behaviours
-		memstorage.Open(),
-	)
+	jobStorage := store.Basic(s)
 
 	// A handler takes an interface.
 	// A handler itself is an interface see (worker.JobHandler)
@@ -42,7 +45,7 @@ func main() {
 	// 	},
 	// )))
 
-	_, err := worker.Open(jobStorage, handler, log.New(os.Stdout, "", 1))
+	_, err = worker.Open(jobStorage, handler, nil, logger)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,7 +53,7 @@ func main() {
 	// Custom HTTP endpoint that creates a basic chat job
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Send a chat job specifically to no one.
-		job, err := store.BuildChatJob("Hello world")
+		job, err := store.BuildChatJob("Hello world", "to someone")
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(500)

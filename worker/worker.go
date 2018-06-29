@@ -104,7 +104,6 @@ func Open(
 
 type RetryStrategy func(Store, *Job) error
 
-// Retry Strategies
 func OneAttempt(store Store, job *Job) error {
 	return store.FailedJob(job)
 }
