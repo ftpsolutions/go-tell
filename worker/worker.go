@@ -37,7 +37,7 @@ func (w *Worker) handleJob(job *gotell.Job) {
 	})
 
 	if err != nil {
-		w.Logger.Println("Error handling job", job, err)
+		w.Logger.Println("Error handling job, retrying", job, err)
 		err = w.retryStrategy(w.store, job)
 		if err != nil {
 			w.Logger.Println("Error retrying job", job, err)
