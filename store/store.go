@@ -1,60 +1,46 @@
 package store
 
 import (
-	"errors"
 	"sync"
+
+	"github.com/ftpsolutions/go-tell"
+	"github.com/ftpsolutions/go-tell/store/mem"
 )
-
-var (
-	ErrorNoJobFound = errors.New("No job found")
-)
-
-type Storage interface {
-	AddJob(job *Job) error
-	GetJob() (*Job, error)
-	UpdateJob(job *Job) error
-	DeleteJob(job *Job) error
-}
-
-type Store interface {
-	Storage
-	WaitToDoJob() chan *Job
-	CompleteJob(job *Job) error
-	ReturnJob(job *Job) error
-	FailedJob(job *Job) error
-}
 
 type BasicStore struct {
-	storage Storage
+	sync.Mutex
 
-	pendingLock      sync.Mutex
-	pendingReceivers []chan *Job
+	storage          gotell.Storage
+	pendingReceivers []chan *gotell.Job
 }
 
-func Basic(storage Storage) *BasicStore {
+func Open(storage gotell.Storage) *BasicStore {
+	if storage == nil {
+		storage = gotell.Storage(mem.Open())
+	}
 	return &BasicStore{
 		storage:          storage,
-		pendingReceivers: make([]chan *Job, 0),
+		pendingReceivers: make([]chan *gotell.Job, 0),
 	}
 }
 
 // Wrappers for internal storage
-func (s *BasicStore) GetJob() (*Job, error)    { return s.storage.GetJob() }
-func (s *BasicStore) UpdateJob(job *Job) error { return s.storage.UpdateJob(job) }
-func (s *BasicStore) DeleteJob(job *Job) error { return s.storage.DeleteJob(job) }
-func (s *BasicStore) AddJob(job *Job) error {
+func (s *BasicStore) GetJob() (*gotell.Job, error)    { return s.storage.GetJob() }
+func (s *BasicStore) UpdateJob(job *gotell.Job) error { return s.storage.UpdateJob(job) }
+func (s *BasicStore) DeleteJob(job *gotell.Job) error { return s.storage.DeleteJob(job) }
+func (s *BasicStore) AddJob(job *gotell.Job) error {
 	var err error
-	job.Status = StatusJobCreated
+	job.Status = gotell.StatusJobCreated
 	receiver := s.getReceiver()
 	if receiver != nil {
 		// Update our job as it's about to be worked on.
-		job.Status = StatusJobPending
-		// After adding our job we check for failures
+		job.Status = gotell.StatusJobPending
+		// Setup a defer to ensure we handle error state for processing receiver.
 		defer func() {
 			if err != nil {
-				// Reset our state
+				// Reset our jobs state.
 				job.Status = ""
-				// Ensure the receiver is returned
+				// Ensure the receiver is returned.
 				s.addReceiver(receiver)
 				return
 			}
@@ -62,7 +48,6 @@ func (s *BasicStore) AddJob(job *Job) error {
 			close(receiver)
 		}()
 	}
-
 	err = s.storage.AddJob(job)
 	if err != nil {
 		return err
@@ -70,8 +55,8 @@ func (s *BasicStore) AddJob(job *Job) error {
 	return nil
 }
 
-func (s *BasicStore) WaitToDoJob() chan *Job {
-	receiver := make(chan *Job, 1)
+func (s *BasicStore) WaitToDoJob() chan *gotell.Job {
+	receiver := make(chan *gotell.Job, 1)
 
 	job, err := s.storage.GetJob()
 	if err != nil {
@@ -84,30 +69,30 @@ func (s *BasicStore) WaitToDoJob() chan *Job {
 	return receiver
 }
 
-func (s *BasicStore) CompleteJob(job *Job) error {
-	job.Status = StatusJobComplete
+func (s *BasicStore) CompleteJob(job *gotell.Job) error {
+	job.Status = gotell.StatusJobComplete
 	return s.storage.UpdateJob(job)
 }
 
-func (s *BasicStore) FailedJob(job *Job) error {
-	job.Status = StatusJobError
+func (s *BasicStore) FailedJob(job *gotell.Job) error {
+	job.Status = gotell.StatusJobError
 	return s.storage.UpdateJob(job)
 }
 
-func (s *BasicStore) ReturnJob(job *Job) error {
-	job.Status = StatusJobCreated
+func (s *BasicStore) ReturnJob(job *gotell.Job) error {
+	job.Status = gotell.StatusJobCreated
 	return s.storage.UpdateJob(job)
 }
 
-func (s *BasicStore) addReceiver(receiver chan *Job) {
-	s.pendingLock.Lock()
+func (s *BasicStore) addReceiver(receiver chan *gotell.Job) {
+	s.Lock()
 	s.pendingReceivers = append(s.pendingReceivers, receiver)
-	s.pendingLock.Unlock()
+	s.Unlock()
 }
 
-func (s *BasicStore) getReceiver() chan *Job {
-	s.pendingLock.Lock()
-	defer s.pendingLock.Unlock()
+func (s *BasicStore) getReceiver() chan *gotell.Job {
+	s.Lock()
+	defer s.Unlock()
 	if len(s.pendingReceivers) > 0 {
 		receiver := s.pendingReceivers[0]
 		s.pendingReceivers = s.pendingReceivers[1:]

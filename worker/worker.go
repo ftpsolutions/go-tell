@@ -5,17 +5,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/ftpsolutions/go-tell/store"
+	gotell "github.com/ftpsolutions/go-tell"
 )
 
 var stdoutLogger = log.New(os.Stdout, "", 1)
 
-type Job = store.Job
-type Store = store.Store
-
 type Worker struct {
-	jobHandler    JobHandler
-	store         Store
+	jobHandler    gotell.JobHandler
+	store         gotell.Store
 	stopChan      chan struct{}
 	retryStrategy RetryStrategy
 
@@ -28,11 +25,11 @@ func (w *Worker) Close() error {
 }
 
 // Should this have error handling to report to the main worker loop?
-func (w *Worker) handleJob(job *Job) {
+func (w *Worker) handleJob(job *gotell.Job) {
 	w.Logger.Println("Handling job", job)
 
 	// Send our job as values to the handler.
-	err := w.jobHandler(Job{
+	err := w.jobHandler(gotell.Job{
 		ID:     job.ID,
 		Status: job.Status,
 		Type:   job.Type,
@@ -77,8 +74,8 @@ func run(w *Worker) {
 }
 
 func Open(
-	store Store,
-	jobHandler JobHandler,
+	store gotell.Store,
+	jobHandler gotell.JobHandler,
 	retryStrategy RetryStrategy,
 	logger *log.Logger,
 ) (*Worker, error) {
@@ -102,18 +99,18 @@ func Open(
 	return &w, nil
 }
 
-type RetryStrategy func(Store, *Job) error
+type RetryStrategy func(gotell.Store, *gotell.Job) error
 
-func OneAttempt(store Store, job *Job) error {
+func OneAttempt(store gotell.Store, job *gotell.Job) error {
 	return store.FailedJob(job)
 }
 
-func AlwaysRetry(store Store, job *Job) error {
+func AlwaysRetry(store gotell.Store, job *gotell.Job) error {
 	return store.ReturnJob(job)
 }
 
 func RetryUntil(failureLimit int) RetryStrategy {
-	return func(store Store, job *Job) error {
+	return func(store gotell.Store, job *gotell.Job) error {
 		job.RetryCount++
 		if job.RetryCount >= failureLimit {
 			err := store.FailedJob(job)

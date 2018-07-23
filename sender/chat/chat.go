@@ -1,17 +1,16 @@
 package chat
 
 import (
+	"github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/sender"
-	"github.com/ftpsolutions/go-tell/store"
-	"github.com/ftpsolutions/go-tell/worker"
 )
 
-func validateChat(job *store.Job) error {
+func validateChat(job *gotell.Job) error {
 	return nil
 }
 
-func MakeHandler(chatSender sender.ByChat) worker.JobHandler {
-	return func(job store.Job) error {
+func MakeHandler(chatSender sender.ByChat) gotell.JobHandler {
+	return func(job gotell.Job) error {
 		err := validateChat(&job)
 		if err != nil {
 			return err

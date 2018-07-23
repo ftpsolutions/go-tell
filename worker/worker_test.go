@@ -3,16 +3,16 @@ package worker
 import (
 	"testing"
 
-	"github.com/ftpsolutions/go-tell/store/storetest"
-
+	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/store"
 	"github.com/ftpsolutions/go-tell/store/mem"
+	"github.com/ftpsolutions/go-tell/store/storetest"
 )
 
 func TestRetryUntil(t *testing.T) {
-	s := store.Basic(memstorage.Open())
+	s := store.Open(mem.Open())
 	retrier := RetryUntil(2)
-	job := &store.Job{
+	job := &gotell.Job{
 		ID: storetest.BuildJobID(1),
 	}
 	err := s.AddJob(job)
@@ -23,14 +23,14 @@ func TestRetryUntil(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if job.Status != store.StatusJobCreated {
+	if job.Status != gotell.StatusJobCreated {
 		t.Error("Expected job to have created status")
 	}
 	err = retrier(s, job)
 	if err == nil {
 		t.Error("Expected error retrying")
 	}
-	if job.Status != store.StatusJobError {
+	if job.Status != gotell.StatusJobError {
 		t.Error("Expected job to have error status")
 	}
 }

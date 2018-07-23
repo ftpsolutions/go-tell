@@ -1,17 +1,16 @@
 package sms
 
 import (
+	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/sender"
-	"github.com/ftpsolutions/go-tell/store"
-	"github.com/ftpsolutions/go-tell/worker"
 )
 
-func validateSMS(job *store.Job) error {
+func validateSMS(job *gotell.Job) error {
 	return nil
 }
 
-func MakeSMSHandler(smsSender sender.BySMS) worker.JobHandler {
-	return func(job store.Job) error {
+func MakeSMSHandler(smsSender sender.BySMS) gotell.JobHandler {
+	return func(job gotell.Job) error {
 		err := validateSMS(&job)
 		if err != nil {
 			return err

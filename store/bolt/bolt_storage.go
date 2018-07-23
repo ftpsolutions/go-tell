@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/boltdb/bolt"
-	"github.com/ftpsolutions/go-tell/store"
+	gotell "github.com/ftpsolutions/go-tell"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -41,17 +41,17 @@ func (s *BoltStore) resetPendingJobs() error {
 		var err error
 		// For each job in the store, reset all pending jobs to created.
 		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
-			job := &store.Job{}
+			job := &gotell.Job{}
 			err = json.Unmarshal(data, job)
 			if err != nil {
 				return err
 			}
 
-			if job.Status != store.StatusJobPending {
+			if job.Status != gotell.StatusJobPending {
 				continue
 			}
 
-			job.Status = store.StatusJobCreated
+			job.Status = gotell.StatusJobCreated
 			_, updatedJobData, err := getByteDataFromJob(job)
 			if err != nil {
 				return err
@@ -69,7 +69,7 @@ func (s *BoltStore) Close() error {
 	return s.db.Close()
 }
 
-func (s *BoltStore) AddJob(job *store.Job) error {
+func (s *BoltStore) AddJob(job *gotell.Job) error {
 	// Get byte from struct
 	id, data, err := getByteDataFromJob(job)
 	if err != nil {
@@ -81,20 +81,20 @@ func (s *BoltStore) AddJob(job *store.Job) error {
 	})
 }
 
-func (s *BoltStore) GetJob() (*store.Job, error) {
-	job := &store.Job{}
+func (s *BoltStore) GetJob() (*gotell.Job, error) {
+	job := &gotell.Job{}
 	noJob := true
 	err := s.read(func(bucket *bolt.Bucket) error {
 		c := bucket.Cursor()
 		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
-			job = &store.Job{} // Reset job.
+			job = &gotell.Job{} // Reset job.
 			err := json.Unmarshal(data, job)
 			if err != nil {
 				// Try next job
 				s.logger.Println("Unable to unmarshal job from boltDB", err)
 				continue
 			}
-			if job.Status == store.StatusJobCreated {
+			if job.Status == gotell.StatusJobCreated {
 				id, err := uuid.FromBytes(idBytes)
 				if err != nil {
 					s.logger.Println("Failed to convert id bytes to UUID")
@@ -113,11 +113,11 @@ func (s *BoltStore) GetJob() (*store.Job, error) {
 	}
 
 	if noJob {
-		return nil, store.ErrorNoJobFound
+		return nil, gotell.ErrorNoJobFound
 	}
 
 	// Set the job to being done.
-	job.Status = store.StatusJobPending
+	job.Status = gotell.StatusJobPending
 	err = s.UpdateJob(job)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (s *BoltStore) GetJob() (*store.Job, error) {
 	return job, nil
 }
 
-func (s *BoltStore) UpdateJob(job *store.Job) error {
+func (s *BoltStore) UpdateJob(job *gotell.Job) error {
 	// Get byte from struct
 	id, data, err := getByteDataFromJob(job)
 	if err != nil {
@@ -139,13 +139,13 @@ func (s *BoltStore) UpdateJob(job *store.Job) error {
 		key, _ := c.Seek(id)
 		if key == nil {
 			// TODO should this behaviour be upsert?
-			return store.ErrorNoJobFound
+			return gotell.ErrorNoJobFound
 		}
 		return bucket.Put(id, data)
 	})
 }
 
-func (s *BoltStore) DeleteJob(job *store.Job) error {
+func (s *BoltStore) DeleteJob(job *gotell.Job) error {
 	return s.write(func(bucket *bolt.Bucket) error {
 		return bucket.Delete(getByteIDFromJob(job))
 	})
@@ -183,11 +183,11 @@ func (s *BoltStore) getBucket(tx *bolt.Tx) (*bolt.Bucket, error) {
 	return bucket, nil
 }
 
-func getByteIDFromJob(job *store.Job) []byte {
+func getByteIDFromJob(job *gotell.Job) []byte {
 	return job.ID.Bytes()
 }
 
-func getByteDataFromJob(job *store.Job) ([]byte, []byte, error) {
+func getByteDataFromJob(job *gotell.Job) ([]byte, []byte, error) {
 	data, err := json.Marshal(job)
 	if err != nil {
 		return nil, nil, err

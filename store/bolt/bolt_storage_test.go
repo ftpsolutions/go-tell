@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Flaque/filet"
-	"github.com/ftpsolutions/go-tell/store"
+	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/store/storetest"
 )
 
@@ -37,7 +37,7 @@ func createTestBoltStore(t *testing.T) (*BoltStore, func()) {
 func TestResetPendingJobs(t *testing.T) {
 	boltStore, cleanupFunc := createTestBoltStore(t)
 	defer cleanupFunc()
-	boltStore.AddJob(&store.Job{
+	boltStore.AddJob(&gotell.Job{
 		ID: storetest.BuildJobID(42),
 	})
 	_, err := boltStore.GetJob()
@@ -57,9 +57,9 @@ func TestResetPendingJobs(t *testing.T) {
 	}
 }
 
-func TestStoreSuite(t *testing.T) {
-	storetest.StorageSuite(func() (store.Storage, func()) {
+func TestBoltAgainstStoreSuite(t *testing.T) {
+	storetest.StorageSuite(func() (gotell.Storage, func()) {
 		s, cleanUpFunc := createTestBoltStore(t)
-		return store.Storage(s), cleanUpFunc
+		return gotell.Storage(s), cleanUpFunc
 	}, t)
 }

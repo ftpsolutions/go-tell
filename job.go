@@ -1,4 +1,4 @@
-package store
+package gotell
 
 import (
 	"errors"
@@ -20,6 +20,8 @@ const (
 	JobTypeEmail = "Email"
 	JobTypeChat  = "Chat"
 )
+
+type JobHandler func(job Job) error
 
 // Job stores the state and raw information to turn it into a task to be executed.
 type Job struct {

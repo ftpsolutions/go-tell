@@ -1,15 +1,11 @@
 package worker
 
-import (
-	"github.com/ftpsolutions/go-tell/store"
-)
+import "github.com/ftpsolutions/go-tell"
 
-type JobHandler func(job Job) error
+type JobHandlers map[string]gotell.JobHandler
 
-type JobHandlers map[string]JobHandler
-
-func NewMultiJobHandler(handlers ...JobHandler) JobHandler {
-	return func(job store.Job) (err error) {
+func NewMultiJobHandler(handlers ...gotell.JobHandler) gotell.JobHandler {
+	return func(job gotell.Job) (err error) {
 		for _, handler := range handlers {
 			err = handler(job)
 			if err != nil {

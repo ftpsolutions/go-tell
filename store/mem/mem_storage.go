@@ -1,40 +1,38 @@
-package memstorage
+package mem
 
-import (
-	"github.com/ftpsolutions/go-tell/store"
-)
+import gotell "github.com/ftpsolutions/go-tell"
 
-type MemStore struct {
-	jobs []*store.Job
+type MemStorage struct {
+	jobs []*gotell.Job
 }
 
-func (m *MemStore) AddJob(job *store.Job) error {
-	job.Status = store.StatusJobCreated
+func (m *MemStorage) AddJob(job *gotell.Job) error {
+	job.Status = gotell.StatusJobCreated
 	m.jobs = append(m.jobs, job)
 	return nil
 }
 
-func (m *MemStore) GetJob() (*store.Job, error) {
+func (m *MemStorage) GetJob() (*gotell.Job, error) {
 	for _, job := range m.jobs {
-		if job.Status == store.StatusJobCreated {
-			job.Status = store.StatusJobPending
+		if job.Status == gotell.StatusJobCreated {
+			job.Status = gotell.StatusJobPending
 			return job, nil
 		}
 	}
-	return nil, store.ErrorNoJobFound
+	return nil, gotell.ErrorNoJobFound
 }
 
-func (m *MemStore) UpdateJob(job *store.Job) error {
+func (m *MemStorage) UpdateJob(job *gotell.Job) error {
 	for _, j := range m.jobs {
 		if j.ID == job.ID {
 			j = job
 			return nil
 		}
 	}
-	return store.ErrorNoJobFound
+	return gotell.ErrorNoJobFound
 }
 
-func (m *MemStore) DeleteJob(job *store.Job) error {
+func (m *MemStorage) DeleteJob(job *gotell.Job) error {
 	for i, j := range m.jobs {
 		if j.ID == job.ID {
 			m.jobs[i] = m.jobs[len(m.jobs)-1]
@@ -44,12 +42,12 @@ func (m *MemStore) DeleteJob(job *store.Job) error {
 			return nil
 		}
 	}
-	return store.ErrorNoJobFound
+	return gotell.ErrorNoJobFound
 }
 
-// Creates a new running memstore
-func Open() *MemStore {
-	return &MemStore{
-		make([]*store.Job, 0),
+// Creates a new running MemStorage
+func Open() *MemStorage {
+	return &MemStorage{
+		make([]*gotell.Job, 0),
 	}
 }

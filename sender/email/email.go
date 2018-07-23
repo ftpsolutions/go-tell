@@ -1,16 +1,15 @@
 package email
 
 import (
+	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/sender"
-	"github.com/ftpsolutions/go-tell/store"
-	"github.com/ftpsolutions/go-tell/worker"
 )
 
-func validateEmail(job *store.Job) error {
+func validateEmail(job *gotell.Job) error {
 	return nil
 }
 
-func genericEmailHandler(emailSender sender.ByEmail, job *store.Job) error {
+func genericEmailHandler(emailSender sender.ByEmail, job *gotell.Job) error {
 	err := validateEmail(job)
 	if err != nil {
 		return err
@@ -35,8 +34,8 @@ func genericEmailHandler(emailSender sender.ByEmail, job *store.Job) error {
 	return emailSender.Send()
 }
 
-func MakeWithAttachmentsHandler(emailSender sender.ByEmailWithAttachments) worker.JobHandler {
-	return func(job store.Job) error {
+func MakeWithAttachmentsHandler(emailSender sender.ByEmailWithAttachments) gotell.JobHandler {
+	return func(job gotell.Job) error {
 		emailSender.WithAttachments(job.Data.Attachments)
 		return genericEmailHandler(
 			emailSender,
@@ -45,8 +44,8 @@ func MakeWithAttachmentsHandler(emailSender sender.ByEmailWithAttachments) worke
 	}
 }
 
-func MakeHandler(emailSender sender.ByEmail) worker.JobHandler {
-	return func(job store.Job) error {
+func MakeHandler(emailSender sender.ByEmail) gotell.JobHandler {
+	return func(job gotell.Job) error {
 		return genericEmailHandler(emailSender, &job)
 	}
 }

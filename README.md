@@ -33,4 +33,4 @@ The blocks are intended to be constructed as so;\
   - Pass error handling behaviour through to a worker
   - Have a default set of error handling behaviours for workers
   - Option to have environment configurations as defaults for stores/senders/sources
-  - A full system (main.go)
+  - A full system (cmd/main.go)
