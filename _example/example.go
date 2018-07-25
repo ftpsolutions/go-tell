@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/sender"
 	"github.com/ftpsolutions/go-tell/sender/chat"
 	"github.com/ftpsolutions/go-tell/store"
@@ -14,14 +15,18 @@ import (
 )
 
 func main() {
+	var port string
+	flag.StringVar(&port, "p", "8080", "port of HTTP server")
+	flag.Parse()
+
 	var err error
 
 	logger := log.New(os.Stdout, "", 1)
 	// A storage system provides CRUD operations for behaviours
-	s := memstorage.Open()
+	s := mem.Open()
 
 	// store.Basic is the default behaviours for a storage system.
-	jobStorage := store.Basic(s)
+	jobStorage := store.Open(s)
 
 	// A handler takes an interface.
 	// A handler itself is an interface see (worker.JobHandler)
@@ -53,7 +58,7 @@ func main() {
 	// Custom HTTP endpoint that creates a basic chat job
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Send a chat job specifically to no one.
-		job, err := store.BuildChatJob("Hello world", "to someone")
+		job, err := gotell.BuildChatJob("Hello world", "to someone")
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(500)
@@ -66,9 +71,6 @@ func main() {
 			return
 		}
 	})
-
-	var port string
-	flag.StringVar(&port, "p", "8080", "port of HTTP server")
 
 	log.Println("Starting server on 0.0.0.0:" + port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
