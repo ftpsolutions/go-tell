@@ -26,7 +26,7 @@ func (w *Worker) Close() error {
 
 // Should this have error handling to report to the main worker loop?
 func (w *Worker) handleJob(job *gotell.Job) {
-	w.Logger.Println("Handling job", job)
+	w.Logger.Printf("Handling job %v: %v", job.ID, job.Data)
 
 	// Send our job as values to the handler.
 	err := w.jobHandler(gotell.Job{
@@ -37,18 +37,18 @@ func (w *Worker) handleJob(job *gotell.Job) {
 	})
 
 	if err != nil {
-		w.Logger.Println("Error handling job, retrying", job, err)
+		w.Logger.Printf("Error handling job ID %v: %v, retrying", job.ID, err)
 		err = w.retryStrategy(w.store, job)
 		if err != nil {
-			w.Logger.Println("Error retrying job", job, err)
+			w.Logger.Println("Error retrying job", job.ID, err)
 		}
 		return
 	}
-	w.Logger.Println("Job completed", job)
+	w.Logger.Println("Job completed", job.ID)
 
 	err = w.store.CompleteJob(job)
 	if err != nil {
-		w.Logger.Println("Error completing job", job, err)
+		w.Logger.Println("Error completing job", job.ID, err)
 		// TODO work out what to do when the job fails to complete.
 	}
 }

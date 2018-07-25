@@ -33,10 +33,6 @@ type Job struct {
 	RetryCount int
 }
 
-func (job *Job) String() string {
-	return job.ID.String()
-}
-
 type JobData struct {
 	From        string
 	Subject     string
@@ -47,6 +43,15 @@ type JobData struct {
 	To          string
 	CC          []string
 	Attachments map[string][]byte
+}
+
+// Human representation of a job.
+func (d JobData) String() string {
+	emails := d.To
+	for _, email := range d.CC {
+		emails += ", " + email
+	}
+	return d.Subject + " - " + emails
 }
 
 func generateJobID() uuid.UUID {
