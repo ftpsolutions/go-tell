@@ -3,7 +3,7 @@ package gotell
 import (
 	"errors"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 )
 
 const StatusJobCreated = ""
@@ -55,6 +55,7 @@ func (d JobData) String() string {
 }
 
 func generateJobID() uuid.UUID {
+	// Panics if unable to generate an ID.
 	return uuid.Must(uuid.NewV4())
 }
 
