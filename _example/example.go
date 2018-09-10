@@ -32,7 +32,7 @@ func main() {
 	// A handler itself is an interface see (worker.JobHandler)
 	// allowing you to write your own business logic based on job information
 	// where required.
-	handler := chat.MakeHandler(sender.NewStdoutSender())
+	handler := chat.MakeHandler(sender.NewStdout())
 
 	// SMTP SERVER
 	// handler := email.MakeHandler(smtp.New(smtp.Options{

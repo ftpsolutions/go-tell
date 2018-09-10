@@ -3,14 +3,15 @@ package sender
 import "fmt"
 
 type Stdout struct {
-	uID      string
-	from     string
-	subject  string
-	to       []string
-	body     string
-	tag      string
-	tracking bool
-	html     bool
+	uID         string
+	from        string
+	subject     string
+	to          []string
+	body        string
+	tag         string
+	tracking    bool
+	html        bool
+	attachments map[string][]byte
 }
 
 func (s *Stdout) UID() string {
@@ -27,6 +28,10 @@ func (s *Stdout) WithSubject(subject string) {
 
 func (s *Stdout) WithBody(body string) {
 	s.body = body
+}
+
+func (s *Stdout) WithAttachments(attachments map[string][]byte) {
+	s.attachments = attachments
 }
 
 func (s *Stdout) WithTag(tag string) {
@@ -53,7 +58,7 @@ func (s *Stdout) SendHtml() error {
 	return nil
 }
 
-func NewStdoutSender() *Stdout {
+func NewStdout() *Stdout {
 	return &Stdout{
 		tracking: true,
 	}
