@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"time"
 
 	gotell "github.com/ftpsolutions/go-tell"
 )
@@ -56,7 +57,12 @@ func (w *Worker) handleJob(job *gotell.Job) {
 func run(w *Worker) {
 	w.Logger.Println("Worker starting", w)
 	for {
-		waitingForAJob := w.store.WaitToDoJob()
+		waitingForAJob, err := w.store.WaitToDoJob()
+		if err != nil {
+			w.Logger.Println("Error retrieving job: ", err, " trying again")
+			time.Sleep(5 * time.Second)
+			continue
+		}
 
 		w.Logger.Println("Worker waiting", w)
 		select {
