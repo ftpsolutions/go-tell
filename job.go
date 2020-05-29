@@ -2,6 +2,7 @@ package gotell
 
 import (
 	"errors"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -29,8 +30,10 @@ type Job struct {
 	Type   string // "email", "sms", "chat" , ?
 	Status string
 	Data   JobData
+
 	// Failure Information
 	RetryCount int
+	Created time.Time
 }
 
 type JobData struct {

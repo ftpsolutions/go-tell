@@ -1,3 +1,6 @@
+github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93 h1:NnAUCP75PRm8yWE7+MZBIAR6PA9iwsBYEc6ZNYOy+AQ=
+github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93/go.mod h1:TK+jB3mBs+8ZMWhU5BqZKnZWJ1MrLo8etNVg51ueTBo=
+github.com/appscode/envconfig v1.2.0 h1:accwA+8UypE2/DqVLd5smaji87yNQFWJ8e/Yzxd/WNA=
 github.com/appscode/envconfig v1.2.0/go.mod h1:b7cbo+vlgg2i/tv4ntkhHVh/11deTg45pASklahQ5t0=
 github.com/appscode/envconfig v1.3.0 h1:fNx08YIK1PJgApl2xB1rD9fn68UMv/xMfgstnNckDH8=
 github.com/appscode/envconfig v1.3.0/go.mod h1:b7cbo+vlgg2i/tv4ntkhHVh/11deTg45pASklahQ5t0=
@@ -7,5 +10,9 @@ github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/gofrs/uuid v3.1.0+incompatible h1:q2rtkjaKT4YEr6E1kamy0Ha4RtepWlQBedyHx0uzKwA=
 github.com/gofrs/uuid v3.1.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
+github.com/spf13/afero v1.2.2 h1:5jhuqJyZCZf2JRofRvN/nIFgIWNzPa3/Vz8mYylgbWc=
+github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
+golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
+golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df h1:n7WqCuqOuCbNr617RXOY0AWRXxgwEyPp2z+p0+hgMuE=
 gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df/go.mod h1:LRQQ+SO6ZHR7tOkpBDuZnXENFzX8qRjMDMyPD6BRkCw=
