@@ -51,7 +51,7 @@ func (s *BasicStore) AddJob(job *gotell.Job) error {
 	if receiver != nil {
 		// Update our job as it's about to be worked on.
 		job.Status = gotell.StatusJobPending
-		// Setup a defer to ensure we handle error state for processing receiver.
+		// Setup a defer to ensure the receiver is given the job after the state is handled.
 		defer func() {
 			if err != nil {
 				// Reset our jobs state.
