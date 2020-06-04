@@ -43,7 +43,7 @@ func (w *Worker) handleJob(job *gotell.Job) {
 
 	if err != nil {
 		w.Logger.Printf("Error handling job ID %v: %v, retrying", job.ID, err)
-		err = w.retryStrategy(w.store, job)
+		err = w.retryStrategy(w.store, job, err)
 		if err != nil {
 			w.Logger.Println("Error retrying job", job.ID, err)
 		}
@@ -109,18 +109,18 @@ func Open(
 	return &w, nil
 }
 
-type RetryStrategy func(gotell.Store, *gotell.Job) error
+type RetryStrategy func(gotell.Store, *gotell.Job, error) error
 
-func OneAttempt(store gotell.Store, job *gotell.Job) error {
+func OneAttempt(store gotell.Store, job *gotell.Job, _ error) error {
 	return store.FailedJob(job)
 }
 
-func AlwaysRetry(store gotell.Store, job *gotell.Job) error {
+func AlwaysRetry(store gotell.Store, job *gotell.Job, _ error) error {
 	return store.ReturnJob(job)
 }
 
 func RetryUntil(failureLimit int) RetryStrategy {
-	return func(store gotell.Store, job *gotell.Job) error {
+	return func(store gotell.Store, job *gotell.Job, _ error) error {
 		job.RetryCount++
 		if job.RetryCount >= failureLimit {
 			err := store.FailedJob(job)

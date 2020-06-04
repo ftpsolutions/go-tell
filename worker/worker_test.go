@@ -19,14 +19,14 @@ func TestRetryUntil(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = retrier(s, job)
+	err = retrier(s, job, err)
 	if err != nil {
 		t.Error(err)
 	}
 	if job.Status != gotell.StatusJobCreated {
 		t.Error("Expected job to have created status")
 	}
-	err = retrier(s, job)
+	err = retrier(s, job, err)
 	if err == nil {
 		t.Error("Expected error retrying")
 	}
