@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Flaque/filet"
+
 	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/store/storetest"
 )
@@ -61,7 +62,7 @@ func TestResetPendingJobs(t *testing.T) {
 }
 
 func TestGolangTimeIsStoredInBoltCorrectly(t *testing.T) {
-	dbPath := filet.TmpDir(t, "")+"test.db"
+	dbPath := filet.TmpDir(t, "") + "test.db"
 	defer filet.CleanUp(t)
 	t.Log("Using test file at: " + dbPath)
 
@@ -72,8 +73,8 @@ func TestGolangTimeIsStoredInBoltCorrectly(t *testing.T) {
 	}
 	// Add a job with a date to see if it saves properly
 	boltStore.AddJob(&gotell.Job{
-		ID: storetest.BuildJobID(42),
-		Created: time.Date(7,6,5,4,3,2,1, time.UTC),
+		ID:      storetest.BuildJobID(42),
+		Created: time.Date(7, 6, 5, 4, 3, 2, 1, time.UTC),
 	})
 	// Close the store, reopen and get the job out
 	err = boltStore.Close()
@@ -93,9 +94,9 @@ func TestGolangTimeIsStoredInBoltCorrectly(t *testing.T) {
 		t.Error(err)
 	}
 
-	expectedDate := time.Date(7,6,5,4,3,2,1, time.UTC)
+	expectedDate := time.Date(7, 6, 5, 4, 3, 2, 1, time.UTC)
 	if !job.Created.Equal(expectedDate) {
-		t.Error("Expected",expectedDate, "got", job.Created)
+		t.Error("Expected", expectedDate, "got", job.Created)
 	}
 }
 

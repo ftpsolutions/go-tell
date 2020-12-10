@@ -3,5 +3,5 @@ package gotell
 import "errors"
 
 var (
-	ErrorNoJobFound = errors.New("No job found")
+	ErrorNoJobFound = errors.New("no job found")
 )

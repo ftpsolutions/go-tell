@@ -1,13 +1,12 @@
 module github.com/ftpsolutions/go-tell
 
+go 1.13
+
 require (
-	github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93
-	github.com/appscode/envconfig v1.2.0 // indirect
-	github.com/appscode/go-notify v0.0.0-20180516083708-17078f08a5ba
+	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/boltdb/bolt v1.3.1
-	github.com/gofrs/uuid v3.1.0+incompatible
-	github.com/spf13/afero v1.2.2 // indirect
+	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/spf13/afero v1.5.1 // indirect
+	gomodules.xyz/notify v0.1.1
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
-
-go 1.13

@@ -1,6 +1,6 @@
 package sender
 
-import notify "github.com/appscode/go-notify"
+import "gomodules.xyz/notify"
 
 type goNotifyEmailWrapper struct {
 	email notify.ByEmail

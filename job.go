@@ -1,7 +1,6 @@
 package gotell
 
 import (
-	"errors"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -11,10 +10,6 @@ const StatusJobCreated = ""
 const StatusJobPending = "pending"
 const StatusJobComplete = "complete"
 const StatusJobError = "error"
-
-var (
-	StaleJobError = errors.New("Job is stale")
-)
 
 const (
 	JobTypeSMS   = "SMS"
@@ -33,7 +28,7 @@ type Job struct {
 
 	// Failure Information
 	RetryCount int
-	Created time.Time
+	Created    time.Time
 }
 
 type JobData struct {
@@ -87,7 +82,7 @@ func validateEmailJob(from, subject, body, tag string, to ...string) error {
 	return nil
 }
 
-//BuildEmailJob
+// BuildEmailJob
 // from is email
 // subject is string max len??
 // to is email
@@ -115,7 +110,7 @@ func BuildEmailJob(from, subject, body, tag string, tracking, isHTML bool, attac
 	}, nil
 }
 
-//TODO Test this when we want to implement
+// TODO Test this when we want to implement
 func validateSMSJob(from, body string, to ...string) error {
 	return nil
 }

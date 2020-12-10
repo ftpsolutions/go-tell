@@ -5,8 +5,9 @@ import (
 	"log"
 
 	"github.com/boltdb/bolt"
-	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/gofrs/uuid"
+
+	gotell "github.com/ftpsolutions/go-tell"
 )
 
 type BoltStore struct {

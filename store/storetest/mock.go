@@ -12,22 +12,22 @@ type MockStorage struct {
 	MockDeleteJob func(job *gotell.Job) error
 }
 
-//AddJob '
+// AddJob '
 func (s *MockStorage) AddJob(job *gotell.Job) error {
 	return s.MockAddJob(job)
 }
 
-//GetJob '
+// GetJob '
 func (s *MockStorage) GetJob() (*gotell.Job, error) {
 	return s.MockGetJob()
 }
 
-//UpdateJob '
+// UpdateJob '
 func (s *MockStorage) UpdateJob(job *gotell.Job) error {
 	return s.MockUpdateJob(job)
 }
 
-//DeleteJob '
+// DeleteJob '
 func (s *MockStorage) DeleteJob(job *gotell.Job) error {
 	return s.MockDeleteJob(job)
 }

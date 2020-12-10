@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"io"
 
-	gonotifySMTP "github.com/appscode/go-notify/smtp"
-	gomail "gopkg.in/gomail.v2"
+	gonotifySMTP "gomodules.xyz/notify/smtp"
+	"gopkg.in/gomail.v2"
 )
 
 const UID = "smtp"

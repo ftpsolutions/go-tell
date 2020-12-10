@@ -38,7 +38,7 @@ func (w *Worker) handleJob(job *gotell.Job) {
 		Data:   job.Data,
 
 		RetryCount: job.RetryCount,
-		Created: job.Created,
+		Created:    job.Created,
 	})
 
 	if err != nil {
@@ -127,7 +127,7 @@ func RetryUntil(failureLimit int) RetryStrategy {
 			if err != nil {
 				return err
 			}
-			return errors.New("Retry limit reached")
+			return errors.New("retry limit reached")
 		}
 		return store.ReturnJob(job)
 	}
