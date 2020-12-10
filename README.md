@@ -1,10 +1,11 @@
-### go-tell v0.1.0 ###
+### go-tell ###
 
 #### What is this? ####
 Go-tell is a set of opionated interfaces and structs intended to be used as building blocks for a notification system.
 
-The blocks are intended to be constructed as so;\
- `Source -> Store <--> Worker -> Sender`
+The blocks are intended to be constructed as so:
+
+    Source -> Store <--> Worker -> Sender
 
 ##### Source
  - A source knows how to receive a job and save to a store
