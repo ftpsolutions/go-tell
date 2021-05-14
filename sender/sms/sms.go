@@ -1,11 +1,27 @@
 package sms
 
 import (
+	"errors"
+	"fmt"
 	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/sender"
+	"regexp"
+	"strings"
 )
 
 func validateSMS(job *gotell.Job) error {
+	re, _ := regexp.Compile(`^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$`)
+	numbers := append([]string{job.Data.To}, job.Data.CC...)
+	failedNumbers := []string{}
+	for _, s := range numbers {
+		if !re.MatchString(s) {
+			failedNumbers = append(failedNumbers, s)
+		}
+	}
+
+	if len(failedNumbers) > 0 {
+		return errors.New(fmt.Sprintf("Mobile phone numbers do not match regex. %s", strings.Join(failedNumbers, ", ")))
+	}
 	return nil
 }
 

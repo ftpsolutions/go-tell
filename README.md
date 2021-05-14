@@ -1,7 +1,7 @@
 ### go-tell ###
 
 #### What is this? ####
-Go-tell is a set of opionated interfaces and structs intended to be used as building blocks for a notification system.
+Go-tell is a set of opinionated interfaces and structs intended to be used as building blocks for a notification system.
 
 The blocks are intended to be constructed as so:
 
