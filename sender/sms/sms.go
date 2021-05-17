@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 )
+var re = regexp.MustCompile(`^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$`)
 
 func validateSMS(job *gotell.Job) error {
-	re, _ := regexp.Compile(`^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$`)
 	numbers := append([]string{job.Data.To}, job.Data.CC...)
 	failedNumbers := []string{}
 	for _, s := range numbers {
