@@ -46,7 +46,6 @@ func MakeSMSHandler(smsSender sender.BySMS) gotell.JobHandler {
 		to, cc := transformToForJob(job.Data)
 		job.Data.To = to
 		job.Data.CC = cc
-		fmt.Println(job.Data.To)
 		err := validateSMS(&job)
 
 		if err != nil {
