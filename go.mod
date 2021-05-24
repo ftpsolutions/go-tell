@@ -7,6 +7,7 @@ require (
 	github.com/boltdb/bolt v1.3.1
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/spf13/afero v1.5.1 // indirect
+	github.com/stretchr/testify v1.4.0
 	gomodules.xyz/notify v0.1.1
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
