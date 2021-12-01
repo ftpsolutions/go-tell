@@ -9,7 +9,7 @@ func validateEmail(job *gotell.Job) error {
 	return nil
 }
 
-func genericEmailHandler(emailSender sender.ByEmail, job *gotell.Job) error {
+func GenericEmailHandler(emailSender sender.ByEmail, job *gotell.Job) error {
 	err := validateEmail(job)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func genericEmailHandler(emailSender sender.ByEmail, job *gotell.Job) error {
 func MakeWithAttachmentsHandler(emailSender sender.ByEmailWithAttachments) gotell.JobHandler {
 	return func(job gotell.Job) error {
 		emailSender.WithAttachments(job.Data.Attachments)
-		return genericEmailHandler(
+		return GenericEmailHandler(
 			emailSender,
 			&job,
 		)
@@ -46,6 +46,6 @@ func MakeWithAttachmentsHandler(emailSender sender.ByEmailWithAttachments) gotel
 
 func MakeHandler(emailSender sender.ByEmail) gotell.JobHandler {
 	return func(job gotell.Job) error {
-		return genericEmailHandler(emailSender, &job)
+		return GenericEmailHandler(emailSender, &job)
 	}
 }
