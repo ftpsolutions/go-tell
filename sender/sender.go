@@ -20,11 +20,14 @@ type BySMS interface {
 
 type ByChat interface {
 	ByPush
+	To(to string, cc ...string)
+}
+
+type ByApi interface {
+	ByPush
 }
 
 type ByPush interface {
-	UID() string
 	WithBody(body string)
-	To(to string, cc ...string)
 	Send() error
 }

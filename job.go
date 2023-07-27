@@ -15,6 +15,7 @@ const (
 	JobTypeSMS   = "SMS"
 	JobTypeEmail = "Email"
 	JobTypeChat  = "Chat"
+	JobTypeApi   = "Api"
 )
 
 type JobHandler func(job Job) error
@@ -75,6 +76,7 @@ func BuildChatJob(body string, to ...string) (*Job, error) {
 			To:   to[0],
 			CC:   to[1:],
 		},
+		Created: time.Now(),
 	}, nil
 }
 
@@ -107,6 +109,7 @@ func BuildEmailJob(from, subject, body, tag string, tracking, isHTML bool, attac
 			To:          to[0],
 			CC:          to[1:],
 		},
+		Created: time.Now(),
 	}, nil
 }
 
@@ -134,5 +137,18 @@ func BuildSMSJob(from, body string, to ...string) (Job, error) {
 			To:   to[0],
 			CC:   to[1:],
 		},
+		Created: time.Now(),
+	}, nil
+}
+
+func BuildAPIJob(payload string) (Job, error) {
+	return Job{
+		ID:     generateJobID(),
+		Type:   JobTypeApi,
+		Status: StatusJobCreated,
+		Data: JobData{
+			Body: payload,
+		},
+		Created: time.Now(),
 	}, nil
 }
