@@ -14,15 +14,25 @@ var stdoutLogger = log.New(os.Stdout, "", 1)
 type Worker struct {
 	jobHandler    gotell.JobHandler
 	store         gotell.Store
-	stopChan      chan struct{}
+	runningChan   chan struct{}
+	stoppingChan  chan struct{}
+	stoppedChan   chan struct{}
 	retryStrategy RetryStrategy
 
 	Logger *log.Logger
 }
 
 func (w *Worker) Close() error {
-	w.stopChan <- struct{}{}
+	//tell the worker to stop
+	w.stoppingChan <- struct{}{}
+	//wait for it to actually stop
+	<-w.stoppedChan
 	return nil
+}
+
+func (w *Worker) WaitTillRunning() {
+	//wait for worker to actually start its run loop (for testing purposes)
+	<-w.runningChan
 }
 
 // Should this have error handling to report to the main worker loop?
@@ -60,6 +70,7 @@ func (w *Worker) handleJob(job *gotell.Job) {
 
 func run(w *Worker) {
 	w.Logger.Println("Worker starting", w)
+	w.runningChan <- struct{}{}
 	for {
 		waitingForAJob, err := w.store.WaitToDoJob()
 		if err != nil {
@@ -76,8 +87,10 @@ func run(w *Worker) {
 			}
 			w.handleJob(job)
 
-		case <-w.stopChan:
+		case <-w.stoppingChan:
 			w.Logger.Println("Worker stopping", w)
+			w.store.StopWaiting(waitingForAJob)
+			w.stoppedChan <- struct{}{}
 			return
 		}
 	}
@@ -101,7 +114,9 @@ func Open(
 		jobHandler:    jobHandler,
 		store:         store,
 		retryStrategy: retryStrategy,
-		stopChan:      make(chan struct{}),
+		runningChan:   make(chan struct{}, 1),
+		stoppingChan:  make(chan struct{}),
+		stoppedChan:   make(chan struct{}),
 
 		Logger: logger,
 	}

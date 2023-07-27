@@ -10,6 +10,7 @@ type Storage interface {
 type Store interface {
 	Storage
 	WaitToDoJob() (chan *Job, error)
+	StopWaiting(chan *Job)
 	CompleteJob(job *Job) error
 	ReturnJob(job *Job) error
 	FailedJob(job *Job) error

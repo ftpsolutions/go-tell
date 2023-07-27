@@ -3,7 +3,7 @@ package store
 import (
 	"sync"
 
-	"github.com/ftpsolutions/go-tell"
+	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/store/mem"
 )
 
@@ -91,6 +91,11 @@ func (s *BasicStore) WaitToDoJob() (chan *gotell.Job, error) {
 	return receiver, nil
 }
 
+func (s *BasicStore) StopWaiting(receiver chan *gotell.Job) {
+	//receiver was waiting, but is shutting down instead so remove from our receiver list
+	s.receivers.Remove(receiver)
+}
+
 // Helper methods
 func (s *BasicStore) CompleteJob(job *gotell.Job) error {
 	job.Status = gotell.StatusJobComplete
@@ -132,5 +137,18 @@ func (r *receiverList) Get() chan *gotell.Job {
 func (r *receiverList) Add(receiver chan *gotell.Job) {
 	r.Lock()
 	r.pending = append(r.pending, receiver)
+	r.Unlock()
+}
+
+func (r *receiverList) Remove(receiver chan *gotell.Job) {
+	r.Lock()
+	//build a new list without the one element we want removed
+	var newList []chan *gotell.Job
+	for _, v := range r.pending {
+		if v != receiver {
+			newList = append(newList, v)
+		}
+	}
+	r.pending = newList
 	r.Unlock()
 }
