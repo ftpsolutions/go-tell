@@ -40,16 +40,7 @@ func (w *Worker) handleJob(job *gotell.Job) {
 	w.Logger.Printf("Handling job %v: %v - Created at %v", job.ID, job.Data, job.Created)
 
 	// Send our job as values to the handler.
-	// TODO make this a job.Copy()
-	err := w.jobHandler(gotell.Job{
-		ID:     job.ID,
-		Status: job.Status,
-		Type:   job.Type,
-		Data:   job.Data,
-
-		RetryCount: job.RetryCount,
-		Created:    job.Created,
-	})
+	err := w.jobHandler(job.Clone())
 
 	if err != nil {
 		w.Logger.Printf("Error handling job ID %v: %v, retrying", job.ID, err)
