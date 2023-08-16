@@ -22,14 +22,28 @@ type JobHandler func(job Job) error
 
 // Job stores the state and raw information to turn it into a task to be executed.
 type Job struct {
-	ID     uuid.UUID
-	Type   string // "email", "sms", "chat" , ?
-	Status string
-	Data   JobData
+	ID        uuid.UUID
+	Type      string // "email", "sms", "chat" , ?
+	Status    string
+	RelatedId string
+	Data      JobData
 
 	// Failure Information
 	RetryCount int
 	Created    time.Time
+}
+
+func (job Job) Clone() Job {
+	return Job{
+		ID:        job.ID,
+		Type:      job.Type,
+		Status:    job.Status,
+		RelatedId: job.RelatedId,
+		Data:      job.Data,
+
+		RetryCount: job.RetryCount,
+		Created:    job.Created,
+	}
 }
 
 type JobData struct {
@@ -62,15 +76,16 @@ func validateChatJob(body string, to ...string) error {
 	return nil
 }
 
-func BuildChatJob(body string, to ...string) (*Job, error) {
+func BuildChatJob(body string, relatedId string, to ...string) (*Job, error) {
 	err := validateChatJob(body, to...)
 	if err != nil {
 		return &Job{}, err
 	}
 	return &Job{
-		ID:     generateJobID(),
-		Type:   JobTypeChat,
-		Status: StatusJobCreated,
+		ID:        generateJobID(),
+		Type:      JobTypeChat,
+		Status:    StatusJobCreated,
+		RelatedId: relatedId,
 		Data: JobData{
 			Body: body,
 			To:   to[0],
@@ -88,16 +103,17 @@ func validateEmailJob(from, subject, body, tag string, to ...string) error {
 // from is email
 // subject is string max len??
 // to is email
-func BuildEmailJob(from, subject, body, tag string, tracking, isHTML bool, attachments map[string][]byte, to ...string) (*Job, error) {
+func BuildEmailJob(from, subject, body, tag string, tracking, isHTML bool, attachments map[string][]byte, relatedId string, to ...string) (*Job, error) {
 	err := validateEmailJob(from, subject, body, tag, to...)
 	if err != nil {
 		return &Job{}, err
 	}
 
 	return &Job{
-		ID:     generateJobID(),
-		Type:   JobTypeEmail,
-		Status: StatusJobCreated,
+		ID:        generateJobID(),
+		Type:      JobTypeEmail,
+		Status:    StatusJobCreated,
+		RelatedId: relatedId,
 		Data: JobData{
 			From:        from,
 			Subject:     subject,
@@ -122,15 +138,16 @@ func validateSMSJob(from, body string, to ...string) error {
 // from is a phone number
 // body is the content
 // to is a list of target phone numbers
-func BuildSMSJob(from, body string, to ...string) (Job, error) {
+func BuildSMSJob(from, body string, relatedId string, to ...string) (Job, error) {
 	err := validateSMSJob(from, body, to...)
 	if err != nil {
 		return Job{}, err
 	}
 	return Job{
-		ID:     generateJobID(),
-		Type:   JobTypeSMS,
-		Status: StatusJobCreated,
+		ID:        generateJobID(),
+		Type:      JobTypeSMS,
+		Status:    StatusJobCreated,
+		RelatedId: relatedId,
 		Data: JobData{
 			From: from,
 			Body: body,
@@ -141,11 +158,12 @@ func BuildSMSJob(from, body string, to ...string) (Job, error) {
 	}, nil
 }
 
-func BuildAPIJob(payload string) (Job, error) {
+func BuildAPIJob(payload string, relatedId string) (Job, error) {
 	return Job{
-		ID:     generateJobID(),
-		Type:   JobTypeApi,
-		Status: StatusJobCreated,
+		ID:        generateJobID(),
+		Type:      JobTypeApi,
+		Status:    StatusJobCreated,
+		RelatedId: relatedId,
 		Data: JobData{
 			Body: payload,
 		},
