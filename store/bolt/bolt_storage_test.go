@@ -5,10 +5,68 @@ import (
 	"time"
 
 	"github.com/Flaque/filet"
+	"github.com/boltdb/bolt"
 
 	gotell "github.com/ftpsolutions/go-tell"
 	"github.com/ftpsolutions/go-tell/store/storetest"
+	"github.com/gofrs/uuid"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestGetJobWithRetryCount(t *testing.T) {
+	// Setup: Mock a BoltDB database and seed it with jobs
+	dbPath := "test.db"
+	db, err := bolt.Open(dbPath, 0600, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	// Create some jobs with different retry counts
+	job1 := &gotell.Job{
+		ID:         uuid.Must(uuid.NewV4()),
+		RetryCount: 0,
+		Status:     gotell.StatusJobCreated,
+	}
+	job2 := &gotell.Job{
+		ID:         uuid.Must(uuid.NewV4()),
+		RetryCount: 5,
+		Status:     gotell.StatusJobCreated,
+	}
+	job3 := &gotell.Job{
+		ID:         uuid.Must(uuid.NewV4()),
+		RetryCount: 3,
+		Status:     gotell.StatusJobCreated,
+	}
+
+	store := &BoltStore{
+		db:         db,
+		bucketName: []byte("testBucket"),
+	}
+
+	// Seed the database with jobs
+	store.AddJob(job1)
+	store.AddJob(job2)
+	store.AddJob(job3)
+
+	// Get the first job; should be job1 since it has the lowest retry count
+	retrievedJob, err := store.GetJob()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, job1.ID, retrievedJob.ID, "Expected the job with the lowest retry count")
+
+	// Now let's say job1 fails and its retry count increases
+	job1.RetryCount = 6
+	store.UpdateJob(job1)
+
+	// Get the job again; this time it should be job3 since job1's retry count is increased
+	retrievedJob, err = store.GetJob()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, job3.ID, retrievedJob.ID, "Expected the job with the lowest retry count")
+}
 
 // Utility to create a temporary boltstore with a cleanup function
 // that should be run once the test is complete.
