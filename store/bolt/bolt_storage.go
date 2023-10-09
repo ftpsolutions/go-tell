@@ -3,7 +3,6 @@ package boltstorage
 import (
 	"encoding/json"
 	"log"
-	"math"
 
 	"github.com/boltdb/bolt"
 	"github.com/gofrs/uuid"
