@@ -3,6 +3,7 @@ package boltstorage
 import (
 	"encoding/json"
 	"log"
+	"math"
 
 	"github.com/boltdb/bolt"
 	"github.com/gofrs/uuid"
@@ -82,13 +83,39 @@ func (s *BoltStore) AddJob(job *gotell.Job) error {
 	})
 }
 
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func (s *BoltStore) GetJob() (*gotell.Job, error) {
 	job := &gotell.Job{}
 	noJob := true
+	lowestRetryCount := -1
 	err := s.read(func(bucket *bolt.Bucket) error {
 		c := bucket.Cursor()
+		// Find the lowest retry count in the job queue
 		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
 			job = &gotell.Job{} // Reset job.
+			err := json.Unmarshal(data, job)
+			if err != nil {
+				// Try next job
+				s.logger.Println("Unable to unmarshal job from boltDB", err)
+				continue
+			}
+			if job.Status == gotell.StatusJobCreated {
+				if lowestRetryCount == -1 {
+					lowestRetryCount = job.RetryCount
+				} else {
+					lowestRetryCount = Min(lowestRetryCount, job.RetryCount)
+				}
+			}
+		}
+		// Find the job with the lowest retry count
+		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
+			job = &gotell.Job{}
 			err := json.Unmarshal(data, job)
 			if err != nil {
 				// Try next job
@@ -104,7 +131,9 @@ func (s *BoltStore) GetJob() (*gotell.Job, error) {
 				}
 				job.ID = id
 				noJob = false
-				break
+				if job.RetryCount == lowestRetryCount {
+					break
+				}
 			}
 		}
 		return nil
