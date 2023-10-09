@@ -93,18 +93,21 @@ func (s *BoltStore) GetJob() (*gotell.Job, error) {
 	job := &gotell.Job{}
 	noJob := true
 	lowestRetryCount := -1
+	// We want to prioritise jobs with the lowest retry count. New jobs have a retry count of 0 so will always get processed first.
 	err := s.read(func(bucket *bolt.Bucket) error {
 		c := bucket.Cursor()
 		// Find the lowest retry count in the job queue
 		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
-			job = &gotell.Job{} // Reset job.
+			job = &gotell.Job{}
 			err := json.Unmarshal(data, job)
 			if err != nil {
-				// Try next job
-				s.logger.Println("Unable to unmarshal job from boltDB", err)
 				continue
 			}
 			if job.Status == gotell.StatusJobCreated {
+				_, err := uuid.FromBytes(idBytes)
+				if err != nil {
+					continue
+				}
 				if lowestRetryCount == -1 {
 					lowestRetryCount = job.RetryCount
 				} else {
