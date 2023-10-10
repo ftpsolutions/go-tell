@@ -82,15 +82,8 @@ func (s *BoltStore) AddJob(job *gotell.Job) error {
 	})
 }
 
-func Min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func (s *BoltStore) GetJob() (*gotell.Job, error) {
-	job := &gotell.Job{}
+	jobToRun := &gotell.Job{}
 	noJob := true
 	lowestRetryCount := -1
 	// We want to prioritise jobs with the lowest retry count. New jobs have a retry count of 0 so will always get processed first.
@@ -98,26 +91,7 @@ func (s *BoltStore) GetJob() (*gotell.Job, error) {
 		c := bucket.Cursor()
 		// Find the lowest retry count in the job queue
 		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
-			job = &gotell.Job{}
-			err := json.Unmarshal(data, job)
-			if err != nil {
-				continue
-			}
-			if job.Status == gotell.StatusJobCreated {
-				_, err := uuid.FromBytes(idBytes)
-				if err != nil {
-					continue
-				}
-				if lowestRetryCount == -1 {
-					lowestRetryCount = job.RetryCount
-				} else {
-					lowestRetryCount = Min(lowestRetryCount, job.RetryCount)
-				}
-			}
-		}
-		// Find the job with the lowest retry count
-		for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
-			job = &gotell.Job{}
+			job := &gotell.Job{}
 			err := json.Unmarshal(data, job)
 			if err != nil {
 				// Try next job
@@ -127,14 +101,15 @@ func (s *BoltStore) GetJob() (*gotell.Job, error) {
 			if job.Status == gotell.StatusJobCreated {
 				id, err := uuid.FromBytes(idBytes)
 				if err != nil {
-					s.logger.Println("Failed to convert id bytes to UUID")
 					// Try next job
+					s.logger.Println("Failed to convert id bytes to UUID")
 					continue
 				}
 				job.ID = id
 				noJob = false
-				if job.RetryCount == lowestRetryCount {
-					break
+				if lowestRetryCount == -1 || job.RetryCount < lowestRetryCount {
+					lowestRetryCount = job.RetryCount
+					*jobToRun = *job
 				}
 			}
 		}
@@ -149,13 +124,13 @@ func (s *BoltStore) GetJob() (*gotell.Job, error) {
 	}
 
 	// Set the job to being done.
-	job.Status = gotell.StatusJobPending
-	err = s.UpdateJob(job)
+	jobToRun.Status = gotell.StatusJobPending
+	err = s.UpdateJob(jobToRun)
 	if err != nil {
 		return nil, err
 	}
 
-	return job, nil
+	return jobToRun, nil
 }
 
 func (s *BoltStore) UpdateJob(job *gotell.Job) error {
