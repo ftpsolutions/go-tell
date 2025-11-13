@@ -71,6 +71,12 @@ func (s *BasicStore) AddJob(job *gotell.Job) error {
 	return nil
 }
 
+func (s *BasicStore) DeleteOldestJob(jobType string) error {
+	s.Lock()
+	defer s.Unlock()
+	return s.storage.DeleteOldestJob(jobType)
+}
+
 func (s *BasicStore) WaitToDoJob() (chan *gotell.Job, error) {
 	s.RLock()
 	defer s.RUnlock()

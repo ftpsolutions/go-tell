@@ -34,6 +34,11 @@ func StorageSuite(storeBuilder func() (gotell.Storage, func()), t *testing.T) {
 	s, cleanUpFunc = storeBuilder()
 	DeleteJob(s, t)
 	cleanUpFunc()
+
+	t.Log("-DeleteOldestJob-")
+	s, cleanUpFunc = storeBuilder()
+	DeleteOldestJob(s, t)
+	cleanUpFunc()
 }
 
 func AddJob(s gotell.Storage, t *testing.T) {
@@ -56,6 +61,24 @@ func DeleteJob(s gotell.Storage, t *testing.T) {
 	errCheck(s.DeleteJob(&gotell.Job{
 		ID: BuildJobID(2),
 	}), t)
+	_, err := s.GetJob()
+	if err != gotell.ErrorNoJobFound {
+		t.Log(err)
+		t.Error("Incorrect error returned")
+	}
+}
+
+func DeleteOldestJob(s gotell.Storage, t *testing.T) {
+	errCheck(s.AddJob(&gotell.Job{
+		ID:   BuildJobID(1),
+		Type: "typeA",
+	}), t)
+	errCheck(s.AddJob(&gotell.Job{
+		ID:   BuildJobID(2),
+		Type: "typeA",
+	}), t)
+	errCheck(s.DeleteOldestJob("typeA"), t)
+	errCheck(s.DeleteOldestJob("typeA"), t)
 	_, err := s.GetJob()
 	if err != gotell.ErrorNoJobFound {
 		t.Log(err)

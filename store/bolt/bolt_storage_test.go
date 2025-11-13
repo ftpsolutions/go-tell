@@ -164,3 +164,105 @@ func TestBoltAgainstStoreSuite(t *testing.T) {
 		return gotell.Storage(s), cleanUpFunc
 	}, t)
 }
+
+func TestDeleteOldestJob(t *testing.T) {
+	boltStore, cleanupFunc := createTestBoltStore(t, "")
+	defer cleanupFunc()
+
+	job1 := gotell.Job{
+		ID:         storetest.BuildJobID(1),
+		RetryCount: 10,
+		Type:       "typeA",
+	}
+	job2 := gotell.Job{
+		ID:         storetest.BuildJobID(2),
+		RetryCount: 5,
+		Type:       "typeA",
+	}
+	boltStore.AddJob(&job1)
+	boltStore.AddJob(&job2)
+
+	// Delete the oldest job (job with ID 1)
+	err := boltStore.DeleteOldestJob("typeA")
+	if err != nil {
+		t.Errorf("Unexpected error when deleting oldest job: %v", err)
+	}
+	// check job 1 is gone
+	boltStore.read(func(bucket *bolt.Bucket) error {
+		c := bucket.Cursor()
+		key, _ := c.Seek(job1.ID.Bytes())
+
+		if string(key) == string(job1.ID.Bytes()) {
+			t.Errorf("Expected job 1 to be deleted, but it still exists")
+		}
+		return nil
+	})
+
+	// Delete the oldest job again (job with ID 2)
+	err = boltStore.DeleteOldestJob("typeA")
+	if err != nil {
+		t.Errorf("Unexpected error when deleting oldest job: %v", err)
+	}
+	boltStore.read(func(bucket *bolt.Bucket) error {
+		c := bucket.Cursor()
+		key, _ := c.Seek(job2.ID.Bytes())
+
+		if string(key) == string(job2.ID.Bytes()) {
+			t.Errorf("Expected job 2 to be deleted, but it still exists")
+		}
+		return nil
+	})
+
+	// Try to delete from an empty store
+	err = boltStore.DeleteOldestJob("typeA")
+	if err != nil {
+		t.Errorf("Unexpected error deleting from empty store, got %v", err)
+	}
+}
+
+func TestDeleteOldestJobMatchesType(t *testing.T) {
+	boltStore, cleanupFunc := createTestBoltStore(t, "")
+	defer cleanupFunc()
+
+	job1 := gotell.Job{
+		ID:         storetest.BuildJobID(1),
+		RetryCount: 10,
+		Type:       "typeA",
+	}
+	job2 := gotell.Job{
+		ID:         storetest.BuildJobID(2),
+		RetryCount: 5,
+		Type:       "typeB",
+	}
+	boltStore.AddJob(&job1)
+	boltStore.AddJob(&job2)
+
+	// Delete the oldest job of type "typeB" (job with ID 2)
+	err := boltStore.DeleteOldestJob("typeB")
+	if err != nil {
+		t.Errorf("Unexpected error when deleting oldest job: %v", err)
+	}
+	// check job 2 is gone
+	boltStore.read(func(bucket *bolt.Bucket) error {
+		c := bucket.Cursor()
+		key, _ := c.Seek(job2.ID.Bytes())
+
+		if string(key) == string(job2.ID.Bytes()) {
+			t.Errorf("Expected job 2 to be deleted, but it still exists")
+		}
+		return nil
+	})
+
+	// Try deleting again, should do nothing as no more typeB jobs
+	err = boltStore.DeleteOldestJob("typeB")
+	if err != nil {
+		t.Errorf("Unexpected error when deleting oldest job: %v", err)
+	}
+	job, err := boltStore.GetJob()
+	if err != nil {
+		t.Errorf("Unexpected error when getting job: %v", err)
+	}
+	if job.ID != job1.ID {
+		t.Errorf("Expected job 1 to still exist, but got job with ID %v", job.ID)
+	}
+}

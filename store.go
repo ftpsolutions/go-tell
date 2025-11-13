@@ -5,6 +5,7 @@ type Storage interface {
 	GetJob() (*Job, error)
 	UpdateJob(job *Job) error
 	DeleteJob(job *Job) error
+	DeleteOldestJob(jobType string) error
 }
 
 type Store interface {

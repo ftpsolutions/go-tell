@@ -1,15 +1,14 @@
 package storetest
 
-import (
-	"github.com/ftpsolutions/go-tell"
-)
+import gotell "github.com/ftpsolutions/go-tell"
 
 // MockStorage is a simple struct for mocking internal storage behaviour
 type MockStorage struct {
-	MockAddJob    func(job *gotell.Job) error
-	MockGetJob    func() (*gotell.Job, error)
-	MockUpdateJob func(job *gotell.Job) error
-	MockDeleteJob func(job *gotell.Job) error
+	MockAddJob          func(job *gotell.Job) error
+	MockGetJob          func() (*gotell.Job, error)
+	MockUpdateJob       func(job *gotell.Job) error
+	MockDeleteJob       func(job *gotell.Job) error
+	MockDeleteOldestJob func(jobType string) error
 }
 
 // AddJob '
@@ -30,4 +29,9 @@ func (s *MockStorage) UpdateJob(job *gotell.Job) error {
 // DeleteJob '
 func (s *MockStorage) DeleteJob(job *gotell.Job) error {
 	return s.MockDeleteJob(job)
+}
+
+// DeleteOldestJob '
+func (s *MockStorage) DeleteOldestJob(jobType string) error {
+	return s.MockDeleteOldestJob(jobType)
 }

@@ -45,6 +45,19 @@ func (m *MemStorage) DeleteJob(job *gotell.Job) error {
 	return gotell.ErrorNoJobFound
 }
 
+func (m *MemStorage) DeleteOldestJob(jobType string) error {
+	for i, j := range m.jobs {
+		if j.Type == jobType {
+			// Remove the job from the slice
+			m.jobs[i] = m.jobs[len(m.jobs)-1]
+			m.jobs[len(m.jobs)-1] = nil
+			m.jobs = m.jobs[:len(m.jobs)-1]
+			return nil
+		}
+	}
+	return nil
+}
+
 // Creates a new running MemStorage
 func Open() *MemStorage {
 	return &MemStorage{

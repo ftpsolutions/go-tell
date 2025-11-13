@@ -158,6 +158,44 @@ func (s *BoltStore) DeleteJob(job *gotell.Job) error {
 	})
 }
 
+func (s *BoltStore) DeleteOldestJob(jobType string) error {
+	{
+		return s.write(func(bucket *bolt.Bucket) error {
+			c := bucket.Cursor()
+			var oldestJobID []byte
+			var highestRetryCount int = -1
+			// Find the oldest failed job in the job queue
+			for idBytes, data := c.First(); idBytes != nil; idBytes, data = c.Next() {
+				job := &gotell.Job{}
+				err := json.Unmarshal(data, job)
+				if err != nil {
+					// Try next job
+					s.logger.Println("Unable to unmarshal job from boltDB", err)
+					continue
+				}
+				if job.Status == gotell.StatusJobCreated && job.Type == jobType {
+					id, err := uuid.FromBytes(idBytes)
+					if err != nil {
+						// Try next job
+						s.logger.Println("Failed to convert id bytes to UUID")
+						continue
+					}
+					job.ID = id
+					if job.RetryCount > highestRetryCount {
+						highestRetryCount = job.RetryCount
+						oldestJobID = idBytes
+					}
+				}
+			}
+
+			if oldestJobID != nil {
+				return bucket.Delete(oldestJobID)
+			}
+			return nil
+		})
+	}
+}
+
 type withBucketfunc func(*bolt.Bucket) error
 
 func (s *BoltStore) read(wb withBucketfunc) error {
